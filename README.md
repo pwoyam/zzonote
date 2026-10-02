@@ -12,7 +12,7 @@
 
 <br />
 
-<img src="./screenshots/preview.png" alt="Zzonote Screenshot" width="800" />
+<img src="./screenshots/main.png" alt="Zzonote Screenshot" width="800" />
 
 <br />
 
