@@ -32,7 +32,6 @@ Thumbs.db
 desktop.ini
 
 # ============ Cargo ============
-src-tauri/Cargo.lock
 
 # ============ Bundle output ============
 *.deb

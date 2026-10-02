@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Zzonote — یادداشت‌های سبک و سریع"
 authors = ["Pouya"]
 license = "MIT"
-repository = ""
+repository = "https://github.com/pwoyam/zzonote"
 edition = "2021"
 rust-version = "1.77"
 

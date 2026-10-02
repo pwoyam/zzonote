@@ -84,9 +84,9 @@
 <td width="50%">
 
 ### 🖥️ پلتفرم
-- 🐧 **Linux**: `.deb` + `.AppImage`
-- 🪟 **Windows**: (به‌زودی)
-- 🍎 **macOS**: (به‌زودی)
+- 🐧 **Linux**: `.deb` + `.AppImage` + `.rpm`
+- 🪟 **Windows**: `.msi` + `.exe`
+- 🍎 **macOS**: `.dmg` (Intel + Apple Silicon)
 - حجم خروجی: **~۴ مگ** (به لطف Tauri)
 
 </td>
@@ -117,7 +117,7 @@
 
 **پیش‌نیازها:** Node.js 22+ · pnpm · Rust 1.77+ · کتابخانه‌های Tauri
 
-    git clone https://github.com/YOUR_USERNAME/zzonote.git
+    git clone https://github.com/pwoyam/zzonote.git
     cd zzonote
     pnpm install
     pnpm dev
