@@ -29,10 +29,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": [
-      "deb",
-      "appimage"
-    ],
+    "targets": "all",
     "category": "Productivity",
     "shortDescription": "یادداشت‌های سبک و سریع",
     "longDescription": "Zzonote — اپلیکیشن یادداشت‌برداری سبک با پشتیبانی از Markdown، تگ‌گذاری، و ذخیره‌ی محلی.",
