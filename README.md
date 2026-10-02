@@ -12,6 +12,10 @@
 
 <br />
 
+<img src="./screenshots/preview.png" alt="Zzonote Screenshot" width="800" />
+
+<br />
+
 **اپلیکیشن یادداشت‌برداری دسکتاپ با پشتیبانی کامل از Markdown، تگ‌گذاری، و ذخیره‌سازی محلی**
 
 <br />
