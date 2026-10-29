@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* تعریف متغیرهای اصلی که کدهای تو (مثل CodeMirror) استفاده می‌کنن */
+:root {
+  --bg-primary: 247 247 249;
+  --bg-secondary: 255 255 255;
+  --bg-tertiary: 248 249 250;
+  --bg-hover: 243 244 246;
+  --border: 229 231 235;
+  --border-soft: 243 244 246;
+  --content-primary: 31 41 55;
+  --content-secondary: 75 85 99;
+  --content-muted: 156 163 175;
+  --accent: 59 130 246;
+}
+
+[data-theme="dark"] {
+  --bg-primary: 17 24 39;
+  --bg-secondary: 31 41 55;
+  --bg-tertiary: 55 65 81;
+  --bg-hover: 75 85 99;
+  --border: 75 85 99;
+  --border-soft: 55 65 81;
+  --content-primary: 243 244 246;
+  --content-secondary: 209 213 219;
+  --content-muted: 156 163 175;
+  --accent: 59 130 246;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text-main font-sans antialiased;
+  }
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-gray-300 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-gray-400; }

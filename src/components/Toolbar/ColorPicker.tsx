@@ -1,0 +1,82 @@
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { Palette } from "lucide-react";
+import { useNotesStore } from "../../store/notesStore";
+import { NOTE_COLORS, type Note } from "../../types";
+
+interface Props { note: Note; }
+
+export default function ColorPicker({ note }: Props) {
+  const update = useNotesStore((s) => s.update);
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (btnRef.current?.contains(t)) return;
+      if (menuRef.current?.contains(t)) return;
+      setOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]);
+
+  const toggle = () => {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      const menuWidth = 224;
+      const menuHeight = 160;
+      let left = r.left;
+      let top = r.bottom + 8;
+      if (left + menuWidth > window.innerWidth) left = window.innerWidth - menuWidth - 8;
+      if (left < 8) left = 8;
+      if (top + menuHeight > window.innerHeight) top = r.top - menuHeight - 8;
+      setPos({ top, left });
+    }
+    setOpen(!open);
+  };
+
+  const current = note.color ?? "default";
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        onClick={toggle}
+        className={`p-2 rounded-lg transition-colors ${open ? 'bg-primary/10 text-primary' : 'text-content-muted hover:bg-bg-hover hover:text-content-primary'}`}
+      >
+        <Palette size={18} />
+      </button>
+
+      {open && createPortal(
+        <div
+          ref={menuRef}
+          style={{ top: pos.top, left: pos.left }}
+          className="fixed z-[9999] bg-surface border border-border rounded-xl shadow-2xl p-3 w-56"
+          dir="rtl"
+        >
+          <div className="text-xs font-bold text-content-muted mb-3 px-1">رنگ یادداشت</div>
+          <div className="grid grid-cols-4 gap-2">
+            {NOTE_COLORS.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => { update(note.id, { color: c.id }); setOpen(false); }}
+                title={c.label}
+                className={`relative w-full aspect-square rounded-lg transition-transform hover:scale-110 flex items-center justify-center ${current === c.id ? 'ring-2 ring-offset-2 ring-primary ring-offset-surface' : ''}`}
+                style={{ background: c.hex }}
+              >
+                {c.id === "default" && <span className="text-white text-[10px] font-bold">✕</span>}
+                {current === c.id && c.id !== "default" && <span className="text-white text-xs font-bold">✓</span>}
+              </button>
+            ))}
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}

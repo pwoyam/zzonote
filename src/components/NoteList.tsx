@@ -1,0 +1,205 @@
+import { useState } from 'react';
+import { Search, Plus, Pin, Trash2, PanelRightClose, GripVertical } from 'lucide-react';
+import { useNotesStore, filterNotes } from '../store/notesStore';
+import { NOTE_COLORS } from '../types';
+import ConfirmModal from './ConfirmModal';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+interface Props {
+  onClose: () => void;
+}
+
+function highlightText(text: string, query: string) {
+  if (!query.trim() || !text) return text;
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+  return parts.map((part, i) =>
+    part.toLowerCase() === query.toLowerCase()
+      ? <mark key={i} className="bg-yellow-300/70 text-inherit rounded px-0.5">{part}</mark>
+      : part
+  );
+}
+
+function SortableNoteCard({ note, search, selectedId, select, togglePin, setActiveTag, isTrash, isDragDisabled }: any) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: note.id, disabled: isDragDisabled });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 1,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style}
+      onClick={() => select(note.id)}
+      className={`group relative p-3 rounded-xl cursor-pointer transition-all duration-150 ${
+        selectedId === note.id 
+          ? 'bg-surface shadow-[0_2px_8px_rgba(0,0,0,0.06)] ring-1 ring-border' 
+          : 'bg-transparent hover:bg-surface/50'
+      } ${isTrash ? 'opacity-60' : ''}`}
+    >
+      <div className="flex items-start justify-between mb-1">
+        <div className="flex items-center gap-2 truncate pl-2">
+          {!isDragDisabled && (
+            <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-content-muted/30 hover:text-content-muted opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+              <GripVertical size={14} />
+            </div>
+          )}
+          {note.emoji && <span className="text-[16px] leading-none">{note.emoji}</span>}
+          <h3 className="font-semibold text-[13px] text-content-primary truncate leading-snug">
+            {highlightText(note.title || 'بدون عنوان', search)}
+          </h3>
+        </div>
+        {!isTrash && (
+          <button 
+            onClick={(e) => { e.stopPropagation(); togglePin(note.id); }}
+            className={`p-1 rounded transition-colors ${note.pinned ? 'text-primary' : 'text-content-muted opacity-0 group-hover:opacity-100 hover:text-content-primary'}`}
+          >
+            <Pin size={12} className={note.pinned ? 'fill-primary rotate-45' : 'rotate-45'} />
+          </button>
+        )}
+      </div>
+      
+      <div className="flex items-center gap-2 mb-1.5 pl-6">
+        <span className="text-[11px] text-content-muted font-medium">
+          {new Date(note.updatedAt).toLocaleDateString('fa-IR')}
+        </span>
+      </div>
+      
+      <p className="text-[12px] text-content-muted line-clamp-2 leading-relaxed mb-2 pl-6">
+        {highlightText(note.content || 'متن خالی...', search)}
+      </p>
+
+      {(note.tags || []).length > 0 && (
+        <div className="flex flex-wrap gap-1 pl-6">
+          {(note.tags || []).map((t: string) => (
+            <span 
+              key={t}
+              onClick={(e) => { e.stopPropagation(); setActiveTag(t); }}
+              className="text-[10px] px-2 py-0.5 rounded-md font-medium bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function NoteList({ onClose }: Props) {
+  const { notes, search, setSearch, selectedId, select, create, activeTag, setActiveTag, view, togglePin, emptyTrash, reorderNotes } = useNotesStore();
+  const [confirmEmpty, setConfirmEmpty] = useState(false);
+  
+  const filteredNotes = filterNotes(notes, search, activeTag, view);
+  
+  const isMainView = view === 'all' && !activeTag && !search;
+  const pinnedNotes = isMainView ? filteredNotes.filter(n => n.pinned) : [];
+  const unpinnedNotes = isMainView ? filteredNotes.filter(n => !n.pinned) : filteredNotes;
+
+  const listTitle = view === 'trash' ? 'زباله‌دان' : view === 'pinned' ? 'علامت‌دارها' : activeTag ? `تگ: ${activeTag}` : 'همه یادداشت‌ها';
+  const isTrash = view === 'trash';
+  const isDragDisabled = !isMainView || isTrash; 
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      reorderNotes(active.id as string, over.id as string);
+    }
+  };
+
+  return (
+    <>
+      <div className="w-80 h-full bg-bg-primary border-l border-border flex flex-col font-sans transition-colors duration-300">
+        
+        <div className="px-4 pt-6 pb-2">
+          <div className="flex items-center justify-between mb-4 pl-1">
+            <div className="flex items-center gap-2">
+              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-bg-hover text-content-muted transition-colors" title="جمع کردن">
+                <PanelRightClose size={18} />
+              </button>
+              <h1 className={`font-bold text-xl tracking-tight ${isTrash ? 'text-red-500' : 'text-content-primary'}`}>{listTitle}</h1>
+            </div>
+            
+            {isTrash ? (
+              <button onClick={() => setConfirmEmpty(true)} className="flex items-center gap-1 text-red-500 hover:bg-red-500/10 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors">
+                <Trash2 size={14} /> خالی کردن
+              </button>
+            ) : (
+              <button onClick={create} className="p-1.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-colors shadow-sm" title="یادداشت جدید (Ctrl+N)">
+                <Plus size={18} />
+              </button>
+            )}
+          </div>
+          
+          <div className="relative">
+            <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-content-muted" />
+            <input 
+              type="text" 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="جستجو..." 
+              className="w-full bg-bg-tertiary rounded-lg py-1.5 pr-9 pl-3 text-[13px] text-content-primary placeholder-content-muted focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none" 
+            />
+          </div>
+
+          {search && (
+            <div className="mt-2 text-[11px] text-content-muted px-1">
+              {filteredNotes.length.toLocaleString('fa-IR')} نتیجه یافت شد
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-3 pb-4 pt-2 space-y-1.5">
+          {filteredNotes.length === 0 && (
+            <div className="text-center text-content-muted mt-10 text-[13px]">
+              {isTrash ? 'زباله‌دان خالی است.' : search ? `هیچ نتیجه‌ای برای «${search}» پیدا نشد.` : activeTag ? `یادداشتی با تگ «${activeTag}» پیدا نشد.` : 'یادداشتی یافت نشد.'}
+            </div>
+          )}
+
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            {pinnedNotes.length > 0 && (
+              <div className="mb-4">
+                <div className="text-[11px] font-bold text-content-muted/70 px-2 mb-1.5 flex items-center gap-1">
+                  <Pin size={10} className="rotate-45" /> سنجاق شده
+                </div>
+                <SortableContext items={pinnedNotes.map(n => n.id)} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-1.5">
+                    {pinnedNotes.map(note => (
+                      <SortableNoteCard key={note.id} note={note} search={search} selectedId={selectedId} select={select} togglePin={togglePin} setActiveTag={setActiveTag} isTrash={isTrash} isDragDisabled={true} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </div>
+            )}
+
+            {isMainView && unpinnedNotes.length > 0 && (
+               <div className="text-[11px] font-bold text-content-muted/70 px-2 mb-1.5">یادداشت‌ها</div>
+            )}
+            
+            <SortableContext items={unpinnedNotes.map(n => n.id)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-1.5">
+                {unpinnedNotes.map(note => (
+                  <SortableNoteCard key={note.id} note={note} search={search} selectedId={selectedId} select={select} togglePin={togglePin} setActiveTag={setActiveTag} isTrash={isTrash} isDragDisabled={isDragDisabled} />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </div>
+      </div>
+
+      <ConfirmModal isOpen={confirmEmpty} title="خالی کردن زباله‌دان" message="آیا مطمئن هستید؟ تمام یادداشت‌های داخل زباله‌دان برای همیشه پاک می‌شوند." confirmText="بله، همه را پاک کن" cancelText="انصراف" isDanger={true} onConfirm={emptyTrash} onCancel={() => setConfirmEmpty(false)} />
+    </>
+  );
+}
