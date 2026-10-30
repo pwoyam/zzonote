@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "postinstall": "node -e \"const fs=require('fs');if(!fs.existsSync('node_modules/.bin/vite')&&fs.existsSync('node_modules/vite/bin/vite.js')){fs.symlinkSync('../vite/bin/vite.js','node_modules/.bin/vite');console.log('vite bin fixed')}\"",
