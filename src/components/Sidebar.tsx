@@ -103,7 +103,7 @@ function SortableNoteCard({ note, search, selectedId, select, togglePin, onReque
 
       <div className="flex items-center gap-1.5 ps-5 mt-1 min-w-0">
         <p className="text-[12.5px] text-content-muted line-clamp-1 leading-tight flex-1 min-w-0">
-          {note.content || t("notes.emptyContent")}
+          {(note.content || "").replace(/<[^>]*>/g, "").trim() || t("notes.emptyContent")}
         </p>
         <span className="text-[10.5px] text-content-muted/60 font-medium shrink-0">
           {new Date(note.updatedAt).toLocaleDateString(locale)}
