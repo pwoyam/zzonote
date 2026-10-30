@@ -12,8 +12,6 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-![Zzonote Screenshot](screenshots/main.png)
-
 [قابلیت‌ها](#-قابلیت‌ها) ·
 [نصب](#-نصب) ·
 [میان‌برها](#️-میان‌برهای-صفحه‌کلید) ·
