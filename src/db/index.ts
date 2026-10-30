@@ -34,6 +34,18 @@ async function getStore(): Promise<Store> {
   return tauriStore;
 }
 
+/* ============ Sanitizer ============ */
+function sanitizeNote(n: any) {
+  return {
+    ...n,
+    title: typeof n?.title === 'string' ? n.title : '',
+    content: typeof n?.content === 'string' ? n.content : '',
+    tags: Array.isArray(n?.tags) ? n.tags.filter((t: any) => typeof t === 'string') : [],
+    emoji: typeof n?.emoji === 'string' ? n.emoji : undefined,
+    parentId: typeof n?.parentId === 'string' || n?.parentId === null ? n.parentId : undefined,
+  };
+}
+
 /* ============ API عمومی ============ */
 
 export interface DBData {
@@ -57,18 +69,22 @@ export async function loadData(): Promise<DBData> {
 }
 
 export async function saveData(data: DBData): Promise<void> {
+  const safeData: DBData = {
+    notes: (data.notes || []).map(sanitizeNote),
+    tags: data.tags || [],
+  };
   if (isTauri()) {
     try {
       const store = await getStore();
-      await store.set("notes", data.notes);
-      await store.set("tags", data.tags);
+      await store.set("notes", safeData.notes);
+      await store.set("tags", safeData.tags);
       await store.save();
       return;
     } catch (e) {
       console.error("خطا در ذخیره‌سازی Tauri Store:", e);
     }
   }
-  saveToLS(data);
+  saveToLS(safeData);
 }
 
 /* ============ Seed تگ‌های پیش‌فرض ============ */
@@ -77,10 +93,10 @@ export async function seedDefaultTags(): Promise<void> {
   if (tags.length > 0) return;
 
   const defaults: Tag[] = [
-    { id: "tag-idea", name: "ایده", color: "#6366f1" },
-    { id: "tag-todo", name: "کارها", color: "#f59e0b" },
-    { id: "tag-personal", name: "شخصی", color: "#10b981" },
-    { id: "tag-important", name: "مهم", color: "#ef4444" },
+    { id: "tag-idea", name: "idea", color: "#6366f1" },
+    { id: "tag-todo", name: "todo", color: "#f59e0b" },
+    { id: "tag-personal", name: "personal", color: "#10b981" },
+    { id: "tag-important", name: "important", color: "#ef4444" },
   ];
 
   const data = await loadData();

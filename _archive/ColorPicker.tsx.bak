@@ -3,10 +3,13 @@ import { createPortal } from "react-dom";
 import { Palette } from "lucide-react";
 import { useNotesStore } from "../../store/notesStore";
 import { NOTE_COLORS, type Note } from "../../types";
+import { useT, useDir } from "../../i18n/useT";
 
 interface Props { note: Note; }
 
 export default function ColorPicker({ note }: Props) {
+  const t = useT();
+  const dir = useDir();
   const update = useNotesStore((s) => s.update);
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
@@ -57,9 +60,9 @@ export default function ColorPicker({ note }: Props) {
           ref={menuRef}
           style={{ top: pos.top, left: pos.left }}
           className="fixed z-[9999] bg-surface border border-border rounded-xl shadow-2xl p-3 w-56"
-          dir="rtl"
+          dir={dir}
         >
-          <div className="text-xs font-bold text-content-muted mb-3 px-1">رنگ یادداشت</div>
+          <div className="text-xs font-bold text-content-muted mb-3 px-1">{t("colorPicker.title")}</div>
           <div className="grid grid-cols-4 gap-2">
             {NOTE_COLORS.map((c) => (
               <button

@@ -88,7 +88,7 @@ export function noteToHtml(note: Note, bodyHtml: string): string {
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
-<title>${note.title || "بدون عنوان"}</title>
+<title>${note.title || "Untitled"}</title>
 <style>
   body { font-family: Vazirmatn, system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.9; color: #111; }
   pre { background: #f4f4f8; padding: 12px; border-radius: 8px; overflow-x: auto; }

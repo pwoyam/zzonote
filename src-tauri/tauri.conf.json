@@ -1,13 +1,13 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Zzonote",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "identifier": "com.zzonote.app",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm build"
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
   },
   "app": {
     "windows": [
@@ -31,8 +31,8 @@
     "active": true,
     "targets": "all",
     "category": "Productivity",
-    "shortDescription": "یادداشت‌های سبک و سریع",
-    "longDescription": "Zzonote — اپلیکیشن یادداشت‌برداری سبک با پشتیبانی از Markdown، تگ‌گذاری، و ذخیره‌ی محلی.",
+    "shortDescription": "Fast, lightweight notes app",
+    "longDescription": "Zzonote — a lightweight note-taking app with block editor, tables, images, sub-pages, and local storage.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

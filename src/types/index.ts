@@ -9,7 +9,8 @@ export interface Note {
   color?: NoteColor;
   encrypted?: boolean;
   isDeleted?: boolean;
-  emoji?: string; // ایموجی برای هر یادداشت
+  emoji?: string;
+  parentId?: string | null; // شناسه والد (null = یادداشت اصلی)
   order?: number; // برای مرتب‌سازی دستی
 }
 
@@ -32,12 +33,12 @@ export type NoteColor =
   | "pink";
 
 export const NOTE_COLORS: { id: NoteColor; hex: string; label: string }[] = [
-  { id: "default", hex: "#8b8b9c", label: "پیش‌فرض" },
-  { id: "red", hex: "#ef4444", label: "قرمز" },
-  { id: "orange", hex: "#f59e0b", label: "نارنجی" },
-  { id: "yellow", hex: "#eab308", label: "زرد" },
-  { id: "green", hex: "#10b981", label: "سبز" },
-  { id: "blue", hex: "#3b82f6", label: "آبی" },
-  { id: "purple", hex: "#8b5cf6", label: "بنفش" },
-  { id: "pink", hex: "#ec4899", label: "صورتی" },
+  { id: "default", hex: "#8b8b9c", label: "Default" },
+  { id: "red", hex: "#ef4444", label: "Red" },
+  { id: "orange", hex: "#f59e0b", label: "Orange" },
+  { id: "yellow", hex: "#eab308", label: "Yellow" },
+  { id: "green", hex: "#10b981", label: "Green" },
+  { id: "blue", hex: "#3b82f6", label: "Blue" },
+  { id: "purple", hex: "#8b5cf6", label: "Purple" },
+  { id: "pink", hex: "#ec4899", label: "Pink" },
 ];

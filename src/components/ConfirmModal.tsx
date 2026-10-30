@@ -1,5 +1,6 @@
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { useEffect } from 'react';
+import { useT, useDir } from '../i18n/useT';
 
 interface Props {
   isOpen: boolean;
@@ -16,12 +17,16 @@ export default function ConfirmModal({
   isOpen,
   title,
   message,
-  confirmText = "تایید",
-  cancelText = "انصراف",
+  confirmText,
+  cancelText,
   isDanger = false,
   onConfirm,
   onCancel
 }: Props) {
+  const t = useT();
+  const dir = useDir();
+  const confirmLabel = confirmText ?? t("common.confirm");
+  const cancelLabel = cancelText ?? t("common.cancel");
   // بستن با دکمه Escape
   useEffect(() => {
     if (!isOpen) return;
@@ -40,28 +45,28 @@ export default function ConfirmModal({
       <div 
         className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center"
         onClick={(e) => e.stopPropagation()}
-        dir="rtl"
+        dir={dir}
       >
         {/* آیکون هشدار */}
-        <div className={`w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-4 ${isDanger ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'}`}>
+        <div className={`w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-4 ${isDanger ? 'bg-content-primary/10 text-content-primary' : 'bg-bg-hover text-content-secondary'}`}>
           <AlertTriangle size={28} className={isDanger ? 'stroke-[2.5px]' : ''} />
         </div>
 
-        <h3 className="text-lg font-bold text-gray-800 mb-2">{title}</h3>
-        <p className="text-sm text-gray-500 mb-6 leading-relaxed">{message}</p>
+        <h3 className="text-lg font-bold text-content-primary mb-2">{title}</h3>
+        <p className="text-sm text-content-muted mb-6 leading-relaxed">{message}</p>
 
         <div className="flex gap-3">
           <button 
             onClick={onCancel}
-            className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
+            className="flex-1 px-4 py-2.5 bg-bg-hover text-content-secondary rounded-xl text-sm font-medium hover:bg-border transition-colors"
           >
-            {cancelText}
+            {cancelLabel}
           </button>
           <button 
             onClick={() => { onConfirm(); onCancel(); }}
-            className={`flex-1 px-4 py-2.5 text-white rounded-xl text-sm font-medium transition-colors shadow-sm ${isDanger ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}
+            className={`flex-1 px-4 py-2.5 text-bg-secondary rounded-xl text-sm font-medium transition-colors shadow-sm bg-content-primary hover:bg-content-secondary`}
           >
-            {confirmText}
+            {confirmLabel}
           </button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 [package]
 name = "zzonote"
-version = "0.1.0"
+version = "1.0.0"
 description = "Zzonote — یادداشت‌های سبک و سریع"
 authors = ["Pouya"]
 license = "MIT"

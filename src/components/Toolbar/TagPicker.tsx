@@ -3,10 +3,13 @@ import { createPortal } from "react-dom";
 import { Tag as TagIcon, X, Plus } from "lucide-react";
 import { useNotesStore } from "../../store/notesStore";
 import type { Note } from "../../types";
+import { useT, useDir } from "../../i18n/useT";
 
 interface Props { note: Note; }
 
 export default function TagPicker({ note }: Props) {
+  const t = useT();
+  const dir = useDir();
   const update = useNotesStore((s) => s.update);
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -72,12 +75,12 @@ export default function TagPicker({ note }: Props) {
           ref={menuRef}
           style={{ top: pos.top, left: pos.left }}
           className="fixed z-[9999] bg-surface border border-border rounded-xl shadow-2xl p-4 w-64"
-          dir="rtl"
+          dir={dir}
         >
-          <div className="text-xs font-bold text-content-muted mb-2">تگ‌های این یادداشت</div>
+          <div className="text-xs font-bold text-content-muted mb-2">{t("tagPicker.title")}</div>
           <div className="flex flex-wrap gap-1.5 mb-3">
             {note.tags.length === 0 ? (
-              <span className="text-xs text-content-muted">هنوز تگی نداری</span>
+              <span className="text-xs text-content-muted">{t("tagPicker.empty")}</span>
             ) : (
               note.tags.map(t => (
                 <span key={t} className="text-xs bg-primary/10 text-primary border border-primary/20 rounded-md px-2 py-1 flex items-center gap-1">
@@ -93,7 +96,7 @@ export default function TagPicker({ note }: Props) {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="تگ جدید..."
+              placeholder={t("tagPicker.placeholder")}
               className="flex-1 min-w-0 bg-bg-primary border border-border rounded-lg px-3 py-1.5 text-xs outline-none focus:border-primary text-content-primary"
             />
             <button type="submit" disabled={!input.trim()} className="bg-primary text-white rounded-lg px-2.5 py-1.5 flex items-center justify-center disabled:opacity-50 transition-colors">

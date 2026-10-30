@@ -19,7 +19,8 @@ interface NotesStore {
   setActiveTag: (tag: string | null) => void;
   setView: (view: ViewMode) => void;
 
-  create: () => Promise<string>;
+  create: (parentId?: string | null) => Promise<string>;
+  createChild: (parentId: string) => Promise<string>;
   update: (id: string, patch: Partial<Note>) => Promise<void>;
   remove: (id: string) => Promise<void>;
   restore: (id: string) => Promise<void>;
@@ -37,6 +38,11 @@ function generateId(): string {
     }
   } catch {}
   return `note-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
+function getDescendantIds(noteId: string, notes: Note[]): string[] {
+  const direct = notes.filter(n => n.parentId === noteId).map(n => n.id);
+  return direct.flatMap(cid => [cid, ...getDescendantIds(cid, notes)]);
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -64,16 +70,16 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     set({
       notes: sorted,
       loading: false,
-      selectedId: get().selectedId ?? sorted.find(n => !n.isDeleted)?.id ?? null,
+      selectedId: get().selectedId ?? sorted.find(n => !n.isDeleted && !n.parentId)?.id ?? null,
     });
   },
 
   select: (id) => set({ selectedId: id }),
   setSearch: (q) => set({ search: q }),
-  setActiveTag: (tag) => set({ activeTag: tag, view: 'all' }), 
-  setView: (view) => set({ view, activeTag: null }),
+  setActiveTag: (tag) => set({ activeTag: tag, view: 'all', search: "" }),
+  setView: (view) => set({ view, activeTag: null, search: "" }),
 
-  create: async () => {
+  create: async (parentId) => {
     const now = Date.now();
     const note: Note = {
       id: generateId(),
@@ -85,9 +91,30 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
       tags: [],
       isDeleted: false,
       order: -Date.now(),
+      parentId: parentId ?? null,
     };
     const notes = sortNotes([note, ...get().notes]);
     set({ notes, selectedId: note.id, view: 'all' });
+    scheduleSave(() => get().notes);
+    return note.id;
+  },
+
+  createChild: async (parentId) => {
+    const now = Date.now();
+    const note: Note = {
+      id: generateId(),
+      title: "",
+      content: "",
+      createdAt: now,
+      updatedAt: now,
+      pinned: false,
+      tags: [],
+      isDeleted: false,
+      order: -Date.now(),
+      parentId,
+    };
+    const notes = sortNotes([note, ...get().notes]);
+    set({ notes });
     scheduleSave(() => get().notes);
     return note.id;
   },
@@ -100,18 +127,29 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   },
 
   remove: async (id) => {
-    await get().update(id, { isDeleted: true, pinned: false });
-    set({ selectedId: null });
+    const notes = get().notes;
+    const ids = new Set([id, ...getDescendantIds(id, notes)]);
+    const now = Date.now();
+    const updated = notes.map(n => ids.has(n.id) ? { ...n, isDeleted: true, pinned: false, updatedAt: now } : n);
+    const selectedId = ids.has(get().selectedId ?? '') ? null : get().selectedId;
+    set({ notes: sortNotes(updated), selectedId });
+    scheduleSave(() => get().notes);
   },
 
   restore: async (id) => {
-    await get().update(id, { isDeleted: false });
+    const notes = get().notes;
+    const ids = new Set([id, ...getDescendantIds(id, notes)]);
+    const updated = notes.map(n => ids.has(n.id) ? { ...n, isDeleted: false } : n);
+    set({ notes: sortNotes(updated) });
+    scheduleSave(() => get().notes);
   },
 
   permanentDelete: async (id) => {
-    const notes = get().notes.filter((n) => n.id !== id);
-    const selectedId = get().selectedId === id ? null : get().selectedId;
-    set({ notes, selectedId });
+    const notes = get().notes;
+    const ids = new Set([id, ...getDescendantIds(id, notes)]);
+    const updated = notes.filter(n => !ids.has(n.id));
+    const selectedId = ids.has(get().selectedId ?? '') ? null : get().selectedId;
+    set({ notes: updated, selectedId });
     scheduleSave(() => get().notes);
   },
 
@@ -139,10 +177,8 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     const oldIndex = notes.findIndex(n => n.id === activeId);
     const newIndex = notes.findIndex(n => n.id === overId);
     if (oldIndex === -1 || newIndex === -1) return;
-
     const newArray = arrayMove(notes, oldIndex, newIndex);
     const updatedNotes = newArray.map((n, i) => ({ ...n, order: i }));
-    
     set({ notes: updatedNotes });
     scheduleSave(() => get().notes);
   }
@@ -163,19 +199,14 @@ export function filterNotes(
   view: ViewMode
 ): Note[] {
   let list = notes;
-  
   if (view === 'trash') list = list.filter((n) => n.isDeleted);
   else list = list.filter((n) => !n.isDeleted);
-
   if (view === 'pinned') list = list.filter((n) => n.pinned);
   if (activeTag) list = list.filter((n) => n.tags.includes(activeTag));
-  
   if (search.trim()) {
     const q = search.trim().toLowerCase();
     list = list.filter(
-      (n) =>
-        n.title.toLowerCase().includes(q) ||
-        n.content.toLowerCase().includes(q)
+      (n) => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)
     );
   }
   return list;

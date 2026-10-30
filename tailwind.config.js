@@ -25,7 +25,11 @@ export default {
         'accent': 'rgb(var(--accent) / <alpha-value>)',
         'accent-hover': 'rgb(var(--accent) / 0.8)',
       },
-      fontFamily: { sans: ['Vazirmatn', 'sans-serif'] }
+      fontFamily: {
+        sans: ['Inter', 'Vazirmatn', 'system-ui', 'sans-serif'],
+        fa: ['Vazirmatn', 'Inter', 'system-ui', 'sans-serif'],
+        en: ['Inter', 'Vazirmatn', 'system-ui', 'sans-serif'],
+      }
     },
   },
   plugins: [],
